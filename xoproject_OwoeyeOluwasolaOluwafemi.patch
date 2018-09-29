@@ -1,0 +1,4145 @@
+From b216a5852d92af9b4c50d5d043f2d2f1aa1a2ec6 Mon Sep 17 00:00:00 2001
+From: Owoeye Oluwasola Oluwafemi <famofash@gmail.com>
+Date: Sat, 29 Sep 2018 10:30:28 -0400
+Subject: [PATCH] My submission
+XOV:v3 new task
+
+---
+ .../Controller/PortfolioControllerTests.cs    |  118 ++
+ .../Controller/ShareControllerTests.cs        |  158 ++
+ .../Controller/TradeControllerTest.cs         |  225 ++
+ .../Repository/PortfolioRepositoryest.cs      |   50 +
+ .../Repository/TradeRepositoryTest.cs         |   51 +
+ XOProject.Tests/ShareControllerTests.cs       |   45 -
+ XOProject.Tests/XO-Project.Tests.csproj       |    1 +
+ XOProject.Tests/coverage.bat                  |    3 +-
+ XOProject/Controller/PortfolioController.cs   |    1 +
+ XOProject/Controller/ShareController.cs       |    4 +-
+ XOProject/Controller/TradeController.cs       |    3 +-
+ XOProject/Model/TradeAnalysis.cs              |    5 +
+ XOProject/Repository/GenericRepository.cs     |    7 +-
+ XOProject/Repository/IGenericRepository.cs    |    2 +
+ XOProject/Repository/IShareRepository.cs      |    1 +
+ XOProject/Repository/ITradeRepository.cs      |    8 +-
+ XOProject/Repository/ShareRepository.cs       |    1 +
+ XOProject/Repository/TradeRepository.cs       |   20 +
+ XOProject/appsettings.json                    |    2 +-
+ coverage-hits.txt                             |  608 ++++++
+ .../Controller/PortfolioController.cs.html    |   45 +
+ .../Controller/ShareController.cs.html        |   51 +
+ .../Controller/TradeController.cs.html        |   57 +
+ .../HttpStatusCodeException.cs.html           |   35 +
+ .../HttpStatusCodeExceptionMiddleware.cs.html |   47 +
+ ...sCodeExceptionMiddlewareExtensions.cs.html |   16 +
+ .../XOProject/Model/HourlyShareRate.cs.html   |   23 +
+ .../XOProject/Model/Portfolio.cs.html         |   20 +
+ coverage-html/XOProject/Model/Trade.cs.html   |   21 +
+ .../XOProject/Model/TradeAnalysis.cs.html     |   29 +
+ .../XOProject/Model/TradeModel.cs.html        |   24 +
+ .../Repository/GenericRepository.cs.html      |   43 +
+ .../Repository/PortfolioRepository.cs.html    |   22 +
+ .../Repository/ShareRepository.cs.html        |   15 +
+ .../Repository/TradeRepository.cs.html        |   34 +
+ coverage-html/index.html                      |  112 +
+ coverage.json                                 | 1853 +++++++++++++++++
+ 37 files changed, 3708 insertions(+), 52 deletions(-)
+ create mode 100644 XOProject.Tests/Controller/PortfolioControllerTests.cs
+ create mode 100644 XOProject.Tests/Controller/ShareControllerTests.cs
+ create mode 100644 XOProject.Tests/Controller/TradeControllerTest.cs
+ create mode 100644 XOProject.Tests/Repository/PortfolioRepositoryest.cs
+ create mode 100644 XOProject.Tests/Repository/TradeRepositoryTest.cs
+ delete mode 100644 XOProject.Tests/ShareControllerTests.cs
+ create mode 100644 coverage-hits.txt
+ create mode 100644 coverage-html/XOProject/Controller/PortfolioController.cs.html
+ create mode 100644 coverage-html/XOProject/Controller/ShareController.cs.html
+ create mode 100644 coverage-html/XOProject/Controller/TradeController.cs.html
+ create mode 100644 coverage-html/XOProject/Exceptions/HttpStatusCodeException.cs.html
+ create mode 100644 coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddleware.cs.html
+ create mode 100644 coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs.html
+ create mode 100644 coverage-html/XOProject/Model/HourlyShareRate.cs.html
+ create mode 100644 coverage-html/XOProject/Model/Portfolio.cs.html
+ create mode 100644 coverage-html/XOProject/Model/Trade.cs.html
+ create mode 100644 coverage-html/XOProject/Model/TradeAnalysis.cs.html
+ create mode 100644 coverage-html/XOProject/Model/TradeModel.cs.html
+ create mode 100644 coverage-html/XOProject/Repository/GenericRepository.cs.html
+ create mode 100644 coverage-html/XOProject/Repository/PortfolioRepository.cs.html
+ create mode 100644 coverage-html/XOProject/Repository/ShareRepository.cs.html
+ create mode 100644 coverage-html/XOProject/Repository/TradeRepository.cs.html
+ create mode 100644 coverage-html/index.html
+ create mode 100644 coverage.json
+
+diff --git a/XOProject.Tests/Controller/PortfolioControllerTests.cs b/XOProject.Tests/Controller/PortfolioControllerTests.cs
+new file mode 100644
+index 0000000..e259435
+--- /dev/null
++++ b/XOProject.Tests/Controller/PortfolioControllerTests.cs
+@@ -0,0 +1,118 @@
++﻿using Moq;
++using NUnit.Framework;
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Text;
++using System.Threading.Tasks;
++using Microsoft.AspNetCore.Mvc;
++using XOProject.Controller;
++
++namespace XOProject.Tests
++{
++    public class PortfolioControllerTests
++    {
++        private readonly Mock<IPortfolioRepository> _portfolioRepositoryMock = new Mock<IPortfolioRepository>();
++        private readonly Mock<ITradeRepository> _tradeRepositoryMock = new Mock<ITradeRepository>();
++        private readonly Mock<IShareRepository> _shareRepositoryMock = new Mock<IShareRepository>();
++
++        private readonly PortfolioController _portfolioController;
++
++        public PortfolioControllerTests()
++        {
++            _portfolioController = new PortfolioController(_shareRepositoryMock.Object, _tradeRepositoryMock.Object, _portfolioRepositoryMock.Object);
++        }
++
++        [TestCase(1, true)]
++        [TestCase(2, false)]
++        public async Task GetPortfolioInfo_ShouldReturnPortfolio(int id, bool expectedResult)
++        {
++            // Arrange
++            var isObjectReturned = false;
++            var trade = new List<Trade>();
++            trade.Add(new Trade
++            {
++                Action = "Buy",
++                NoOfShares = 302,
++                Id = 2,
++                Price = 2332
++
++            });
++            IQueryable<Portfolio> portfolios = new List<Portfolio>()
++            {
++                new Portfolio()
++                {
++                    Id = 1, 
++                    Name = "Adewale Johnson",
++                    Trade = trade
++                }
++            }.AsQueryable();
++            _portfolioRepositoryMock.Setup(x => x.GetAll()).Returns(portfolios);
++
++            // Act
++            var result = await _portfolioController.GetPortfolioInfo(id) as ObjectResult;
++            var objectReturned = result.Value as IQueryable<Portfolio>;
++            if (objectReturned.Count() > 0)
++            {
++                isObjectReturned = true;
++            }
++
++
++            // Assert
++            Assert.AreEqual(expectedResult, isObjectReturned);
++        }
++
++        [Test]
++        public async Task Post_ShouldValidateModelStates()
++        {
++            //Arrange
++            var portfolio = new Portfolio
++            {
++                Name = "",
++                Trade = new List<Trade> { }
++            };
++            _portfolioController.ModelState.AddModelError("Error", "Error");
++            //Act 
++            var result = await _portfolioController.Post(portfolio) as ObjectResult;
++            var createdResult = result as CreatedResult;
++            // Assert
++            Assert.AreEqual(400, result.StatusCode);
++        }
++        [Test]
++        public async Task Post_ShouldReturnValue()
++        {
++
++            //Arrange
++            var trade = new List<Trade>();
++            trade.Add(new Trade
++            {
++                Action = "Buy",
++                NoOfShares = 302,
++                Id = 2,
++                Price = 2332
++
++            });
++            var portfolio = new Portfolio
++            {
++                Name = "Owoeye Femi",
++                Trade = trade
++            };
++
++            //Act 
++            var result = await _portfolioController.Post(portfolio) as ObjectResult;
++
++            // Assert
++            Assert.NotNull(portfolio.Name);
++
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++            var objectReturned = result.Value as Portfolio;
++            Assert.AreEqual(portfolio, objectReturned);
++        }
++
++
++
++    }
++}
+diff --git a/XOProject.Tests/Controller/ShareControllerTests.cs b/XOProject.Tests/Controller/ShareControllerTests.cs
+new file mode 100644
+index 0000000..9e2b125
+--- /dev/null
++++ b/XOProject.Tests/Controller/ShareControllerTests.cs
+@@ -0,0 +1,158 @@
++using System;
++using System.Threading.Tasks;
++using XOProject.Controller;
++using Microsoft.AspNetCore.Mvc;
++using NUnit.Framework;
++using Moq;
++using System.Collections.Generic;
++using System.Linq;
++
++namespace XOProject.Tests
++{
++    public class ShareControllerTests
++    {
++        private readonly Mock<IShareRepository> _shareRepositoryMock = new Mock<IShareRepository>();
++
++        private readonly ShareController _shareController;
++
++        public ShareControllerTests()
++        {
++            _shareController = new ShareController(_shareRepositoryMock.Object);
++        }
++
++        [Test]
++        public async Task Post_ShouldInsertHourlySharePrice()
++        { 
++            // Arrange
++            var hourRate = new HourlyShareRate
++            {
++                Symbol = "CBI",
++                Rate = 330.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++            };
++
++           
++
++            // Act
++            var result = await _shareController.Post(hourRate);
++
++            // Assert
++            Assert.NotNull(result);
++
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++        [Test]
++        public async Task Post_Should_Return_Share_Created()
++        {
++            // Arrange
++            var hourRate = new HourlyShareRate
++            {
++                Symbol = "CBI",
++                Rate = 330.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++            };
++
++           
++
++            // Act
++            var result = await _shareController.Post(hourRate);
++
++            // Assert
++            var createdResult = (result as CreatedResult).Value as HourlyShareRate;
++            
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(hourRate, createdResult);
++        }
++
++        [TestCase("CBI", true)]
++        [TestCase("DBI", true)]
++        public async Task Get_ShouldReturn_value(string symbol, bool expectedResult)
++        {
++            bool isObjectReturned = false;
++            //Arrange
++            List<HourlyShareRate> share =  new List<HourlyShareRate>()
++            {
++                new HourlyShareRate()
++                {
++                Symbol = "CBI",
++                Rate = 330.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++                },new HourlyShareRate()
++                {
++                Symbol = "DBI",
++                Rate = 330.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++                }
++            };
++
++            _shareRepositoryMock.Setup(x => x.Query()).Returns(share.AsQueryable());
++            //Act 
++            var result = await _shareController.Get(symbol) as ObjectResult;
++
++            var objectReturned = result.Value as IQueryable<HourlyShareRate>;
++            // Assert
++            Assert.IsNotNull(objectReturned);
++            Assert.IsNotNull(result);
++            if (objectReturned.Count() > 0)
++            {
++                isObjectReturned = true;
++            }
++            
++    
++           
++            Assert.AreEqual(expectedResult, isObjectReturned);
++           
++        }
++        [Test]
++        public async Task Post_ShouldValidateModelStates()
++        {
++            //Arrange
++            var hourRate = new HourlyShareRate
++            {
++                //Symbol = "CBI",
++                //Rate = 330.0M,
++                //TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++            };
++
++
++            _shareController.ModelState.AddModelError("Error", "Error");
++            //Act 
++            var result = await _shareController.Post(hourRate) as ObjectResult;
++            var createdResult = result as CreatedResult;
++            // Assert
++            Assert.AreEqual(400, result.StatusCode);
++        }
++        [TestCase("CBI", true)]
++        [TestCase("DBI", false)]
++        public void Get_LatestPrice_should_Return_Ok(string symbol, bool expectedResult)
++        {
++           
++            //Arrange
++            IQueryable<HourlyShareRate> share = new List<HourlyShareRate>()
++            {
++                new HourlyShareRate()
++                {
++                Symbol = "CBI",
++                Rate = 30.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++                },new HourlyShareRate()
++                {
++                Symbol = "DBI",
++                Rate = 330.0M,
++                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
++                }
++            }.AsQueryable();
++
++            _shareRepositoryMock.Setup(x => x.Query()).Returns(share);
++            //Act 
++            var result =  _shareController.GetLatestPrice(symbol).Result as ObjectResult;
++
++            //Assert
++            Assert.AreEqual(200, result.StatusCode);
++        }
++
++    }
++}
+diff --git a/XOProject.Tests/Controller/TradeControllerTest.cs b/XOProject.Tests/Controller/TradeControllerTest.cs
+new file mode 100644
+index 0000000..d05b7ae
+--- /dev/null
++++ b/XOProject.Tests/Controller/TradeControllerTest.cs
+@@ -0,0 +1,225 @@
++﻿using Moq;
++using System;
++using System.Collections.Generic;
++using System.Text;
++
++using NUnit.Framework;
++using System.Threading.Tasks;
++using System.Linq;
++using Microsoft.AspNetCore.Mvc;
++
++namespace XOProject.Tests
++{
++  
++    class TradeControllerTest
++    {
++        private readonly Mock<IPortfolioRepository> _portfolioRepositoryMock = new Mock<IPortfolioRepository>();
++        private readonly Mock<ITradeRepository> _tradeRepositoryMock = new Mock<ITradeRepository>();
++        private readonly Mock<IShareRepository> _shareRepositoryMock = new Mock<IShareRepository>();
++
++        private readonly Controller.TradeController _tradeController;
++        public TradeControllerTest()
++        {
++            _tradeController = new Controller.TradeController(_shareRepositoryMock.Object, 
++                _tradeRepositoryMock.Object, 
++                _portfolioRepositoryMock.Object);
++
++        }
++        [TestCase(3, true)]
++        [TestCase(2, true)]
++        public void GetAllTradings_Should_Return_Value(int id, bool expectedResult)
++        {
++            bool isObjectReturned = false;
++            //Arrange 
++            List<Trade> trade = new List<Trade>()
++            {
++              new Trade
++              {
++                  Symbol = "REL" , Action = "Buy" , Id = 1 , NoOfShares = 200,
++                  PortfolioId = 3
++              },
++                new Trade
++              {
++                  Symbol = "CIB" , Action = "Buy" , Id = 2 , NoOfShares = 200,
++                  PortfolioId = 2
++              }
++            };
++            //Act
++            _tradeRepositoryMock.Setup(a => a.Query()).Returns(trade.AsQueryable());
++            var result = _tradeController.GetAllTradings(id).Result as ObjectResult;
++            var objectReturned = result.Value as IQueryable<Trade>;
++            //Assert
++            Assert.IsNotNull(objectReturned);
++            Assert.NotNull(result);
++            if (objectReturned.Count() > 0)
++            {
++                isObjectReturned = true;
++            }
++
++            Assert.AreEqual(isObjectReturned, expectedResult);
++        }
++
++        [TestCase(3)]
++        [TestCase(2)]
++        public void GetAllTradings_Should_Return_Ok(int id)
++        {
++           
++            //Arrange 
++            List<Trade> trade = new List<Trade>()
++            {
++              new Trade
++              {
++                  Symbol = "REL" , Action = "Buy" , Id = 1 , NoOfShares = 200,
++                  PortfolioId = 3
++              },
++                new Trade
++              {
++                  Symbol = "CIB" , Action = "Buy" , Id = 2 , NoOfShares = 200,
++                  PortfolioId = 2
++              }
++            };
++            //Act
++            _tradeRepositoryMock.Setup(a => a.Query()).Returns(trade.AsQueryable());
++            var result = _tradeController.GetAllTradings(id).Result as ObjectResult;
++            
++            //Assert
++           
++
++            Assert.AreEqual(200, result.StatusCode);
++        }
++        [TestCase("REL")]
++        public void GetAnalysis_Should_Return_Ok(string symbol)
++        {
++            bool isObjectReturned = false;
++            //Arrange 
++            List<Trade> trade = new List<Trade>()
++            {
++              new Trade
++              {
++                  Symbol = "REL" , Action = "BUY" , Id = 1 , NoOfShares = 200,
++                  PortfolioId = 3 , Price = 343 
++              },
++                new Trade
++              {
++                  Symbol = "REL" , Action = "SELL" , Id = 2 , NoOfShares = 100,
++                  PortfolioId = 2 , Price = 232
++              }
++            };
++            //var tradeAnalysis = new List<TradeAnalysis>();
++            var tradeAnalysis = trade.Where(s => s.Symbol == symbol).GroupBy(a => a.Action).Select
++                (g => new TradeAnalysis
++                {
++                    Maximum = g.Max(a=>a.NoOfShares),
++                    Minimum = g.Min(a=>a.NoOfShares),
++                    Average = g.Average(a=>a.NoOfShares),
++                    Sum = g.Sum(a=>a.NoOfShares),
++                    Action = g.Key
++                }).ToList();
++            //Act
++            _tradeRepositoryMock.Setup(a => a.GetTradeAnalysis(symbol)).Returns(tradeAnalysis.AsQueryable());
++            var result = _tradeController.GetAnalysis(symbol).Result as ObjectResult;
++            var objectReturned = result.Value as List<TradeAnalysis>;
++            //Assert
++            Assert.IsNotNull(result);
++
++            if (result.StatusCode == 200)
++            {
++                isObjectReturned = true;
++            }
++
++            Assert.AreEqual(isObjectReturned, true);
++        }
++        [TestCase("REL")]
++        public void GetAnalysis_Should_Return_Valid_Result (string symbol)
++        {
++            bool isObjectReturned = false;
++            //Arrange 
++            List<Trade> trade = new List<Trade>()
++            {
++              new Trade
++              {
++                  Symbol = "REL" , Action = "BUY" , Id = 1 , NoOfShares = 200,
++                  PortfolioId = 3 , Price = 343
++              },
++                new Trade
++              {
++                  Symbol = "REL" , Action = "BUY" , Id = 2 , NoOfShares = 100,
++                  PortfolioId = 2 , Price = 232
++              }
++            };
++            //var tradeAnalysis = new List<TradeAnalysis>();
++            var tradeAnalysis = trade.Where(s => s.Symbol == symbol).GroupBy(a => a.Action).Select
++                (g => new TradeAnalysis
++                {
++                    Maximum = g.Max(a => a.NoOfShares),
++                    Minimum = g.Min(a => a.NoOfShares),
++                    Average = g.Average(a => a.NoOfShares),
++                    Sum = g.Sum(a => a.NoOfShares),
++                    Action = g.Key
++                }).ToList();
++            //Act
++            _tradeRepositoryMock.Setup(a => a.GetTradeAnalysis(symbol)).Returns(tradeAnalysis.AsQueryable());
++            var result = _tradeController.GetAnalysis(symbol).Result as ObjectResult;
++            var objectReturned = result.Value as List<TradeAnalysis>;
++            //Assert
++            Assert.IsNotNull(result);
++            Assert.IsNotNull(objectReturned);
++            if (objectReturned.Count() == tradeAnalysis.Count())
++            {
++                isObjectReturned = true;
++            }
++            else
++            {
++
++            }
++
++            Assert.AreEqual(isObjectReturned, true);
++        }
++        [TestCase("REL")]
++        public void GetAnalysis_Should_Return_Valid_Max(string symbol)
++        {
++            bool isObjectReturned = false;
++            //Arrange 
++            List<Trade> trade = new List<Trade>()
++            {
++              new Trade
++              {
++                  Symbol = "REL" , Action = "BUY" , Id = 1 , NoOfShares = 200,
++                  PortfolioId = 3 , Price = 343
++              },
++                new Trade
++              {
++                  Symbol = "REL" , Action = "BUY" , Id = 2 , NoOfShares = 100,
++                  PortfolioId = 2 , Price = 232
++              }
++            };
++            //var tradeAnalysis = new List<TradeAnalysis>();
++            var tradeAnalysis = trade.Where(s => s.Symbol == symbol).GroupBy(a => a.Action).Select
++                (g => new TradeAnalysis
++                {
++                    Maximum = g.Max(a => a.NoOfShares),
++                    Minimum = g.Min(a => a.NoOfShares),
++                    Average = g.Average(a => a.NoOfShares),
++                    Sum = g.Sum(a => a.NoOfShares),
++                    Action = g.Key
++                }).ToList();
++            //Act
++            _tradeRepositoryMock.Setup(a => a.GetTradeAnalysis(symbol)).Returns(tradeAnalysis.AsQueryable());
++            var result = _tradeController.GetAnalysis(symbol).Result as ObjectResult;
++            var objectReturned = result.Value as List<TradeAnalysis>;
++            //Assert
++            Assert.IsNotNull(result);
++            Assert.IsNotNull(objectReturned);
++            if (objectReturned.FirstOrDefault().Sum == tradeAnalysis.FirstOrDefault().Sum)
++            {
++                isObjectReturned = true;
++            }
++            else
++            {
++
++            }
++
++            Assert.AreEqual(isObjectReturned, true);
++        }
++    }
++}
+diff --git a/XOProject.Tests/Repository/PortfolioRepositoryest.cs b/XOProject.Tests/Repository/PortfolioRepositoryest.cs
+new file mode 100644
+index 0000000..86bb53b
+--- /dev/null
++++ b/XOProject.Tests/Repository/PortfolioRepositoryest.cs
+@@ -0,0 +1,50 @@
++﻿using Microsoft.EntityFrameworkCore;
++using Moq;
++using NUnit.Framework;
++using System.Collections.Generic;
++
++namespace XOProject.Tests.Repository
++{
++    class PortfolioRepositoryest
++    {
++        private Mock<IPortfolioRepository> _portfolioRepository = new Mock<IPortfolioRepository>();
++       [Test]
++        public void GetAll_Return_Valu()
++        {
++
++            //Arrange
++            var options = new DbContextOptionsBuilder<ExchangeContext>()
++            .UseInMemoryDatabase(databaseName: "GetPortfolio")
++            .Options;
++            using (var context = new ExchangeContext(options))
++            {
++                var trade = new List<Trade>
++                {
++                    new Trade
++                    {
++                        Action = "Buy",
++                        NoOfShares = 302,
++                        Id = 2,
++                        Price = 2332
++
++                    }
++                };
++
++                context.Portfolios.Add(new Portfolio
++                {
++
++                    Id = 1,
++                    Name = "Adewale Johnson",
++                    Trade = trade
++
++                });
++                context.SaveChanges();
++                //Act
++                IPortfolioRepository repo = new PortfolioRepository(context);
++                var result = repo.GetAll();
++                //Assert
++                Assert.NotNull(result);
++            }
++        }
++    }
++}
+diff --git a/XOProject.Tests/Repository/TradeRepositoryTest.cs b/XOProject.Tests/Repository/TradeRepositoryTest.cs
+new file mode 100644
+index 0000000..735fddc
+--- /dev/null
++++ b/XOProject.Tests/Repository/TradeRepositoryTest.cs
+@@ -0,0 +1,51 @@
++﻿using Microsoft.EntityFrameworkCore;
++using Moq;
++using NUnit.Framework;
++
++namespace XOProject.Tests.Repository
++{
++    class TradeRepositoryTest
++    {
++        private Mock<ITradeRepository> _iTradeRepositoryMock = new Mock<ITradeRepository>();
++       [TestCase("REL")]
++        public void TradeAnalysis_Does_Not_Return_Null(string symbol)
++        {
++            //Arrange
++            var options = new DbContextOptionsBuilder<ExchangeContext>()
++            .UseInMemoryDatabase(databaseName: "GetTradeAnalysis")
++            .Options;
++            using (var context = new ExchangeContext(options))
++            {
++              
++                context.Trades.Add(new Trade
++                {
++                    Symbol = "REL",
++                    Action = "BUY",
++                    Id = 1,
++                    NoOfShares = 200,
++                    PortfolioId = 3,
++                    Price = 343
++                });
++                context.Trades.Add(
++                    new Trade
++                    {
++                        Symbol = "KEL",
++                        Action = "SELL",
++                        Id = 2,
++                        NoOfShares = 100,
++                        PortfolioId = 2,
++                        Price = 232
++                    }
++                    );
++                context.SaveChanges();
++                //Act
++                ITradeRepository repo = new TradeRepository(context);
++                var result = repo.GetTradeAnalysis(symbol);
++                //Assert
++                Assert.NotNull(result);
++               
++
++            }
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/XOProject.Tests/ShareControllerTests.cs b/XOProject.Tests/ShareControllerTests.cs
+deleted file mode 100644
+index cfcfac2..0000000
+--- a/XOProject.Tests/ShareControllerTests.cs
++++ /dev/null
+@@ -1,45 +0,0 @@
+-using System;
+-using System.Threading.Tasks;
+-using XOProject.Controller;
+-using Microsoft.AspNetCore.Mvc;
+-using NUnit.Framework;
+-using Moq;
+-
+-namespace XOProject.Tests
+-{
+-    public class ShareControllerTests
+-    {
+-        private readonly Mock<IShareRepository> _shareRepositoryMock = new Mock<IShareRepository>();
+-
+-        private readonly ShareController _shareController;
+-
+-        public ShareControllerTests()
+-        {
+-            _shareController = new ShareController(_shareRepositoryMock.Object);
+-        }
+-
+-        [Test]
+-        public async Task Post_ShouldInsertHourlySharePrice()
+-        {
+-            var hourRate = new HourlyShareRate
+-            {
+-                Symbol = "CBI",
+-                Rate = 330.0M,
+-                TimeStamp = new DateTime(2018, 08, 17, 5, 0, 0)
+-            };
+-
+-            // Arrange
+-
+-            // Act
+-            var result = await _shareController.Post(hourRate);
+-
+-            // Assert
+-            Assert.NotNull(result);
+-
+-            var createdResult = result as CreatedResult;
+-            Assert.NotNull(createdResult);
+-            Assert.AreEqual(201, createdResult.StatusCode);
+-        }
+-        
+-    }
+-}
+diff --git a/XOProject.Tests/XO-Project.Tests.csproj b/XOProject.Tests/XO-Project.Tests.csproj
+index cb5c785..9959e3a 100644
+--- a/XOProject.Tests/XO-Project.Tests.csproj
++++ b/XOProject.Tests/XO-Project.Tests.csproj
+@@ -7,6 +7,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
++    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.1.3" />
+     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />
+     <DotNetCliToolReference Include="MiniCover" Version="2.0.0-ci-20180304114938" />
+     <PackageReference Include="Moq" Version="4.9.0" />
+diff --git a/XOProject.Tests/coverage.bat b/XOProject.Tests/coverage.bat
+index c719387..7ae8566 100644
+--- a/XOProject.Tests/coverage.bat
++++ b/XOProject.Tests/coverage.bat
+@@ -8,4 +8,5 @@ dotnet minicover reset --workdir ../
+ 
+ dotnet test --no-build
+ dotnet minicover uninstrument --workdir ../
+-dotnet minicover report --workdir ../ --threshold 60
+\ No newline at end of file
++dotnet minicover report --workdir ../ --threshold 60
++dotnet minicover htmlreport --workdir ../ --threshold 60
+\ No newline at end of file
+diff --git a/XOProject/Controller/PortfolioController.cs b/XOProject/Controller/PortfolioController.cs
+index 7e5a8ae..59631a3 100644
+--- a/XOProject/Controller/PortfolioController.cs
++++ b/XOProject/Controller/PortfolioController.cs
+@@ -36,5 +36,6 @@ namespace XOProject.Controller
+             return Created($"Portfolio/{value.Id}", value);
+         }
+ 
++
+     }
+ }
+diff --git a/XOProject/Controller/ShareController.cs b/XOProject/Controller/ShareController.cs
+index 42138cc..0ca9306 100644
+--- a/XOProject/Controller/ShareController.cs
++++ b/XOProject/Controller/ShareController.cs
+@@ -18,7 +18,7 @@ namespace XOProject.Controller
+         [HttpGet("{symbol}")]
+         public async Task<IActionResult> Get([FromRoute]string symbol)
+         {
+-            var shares = _shareRepository.Query().Where(x => x.Symbol.Equals(symbol)).ToList();
++            var shares = _shareRepository.Query().Where(x => x.Symbol.Equals(symbol));
+             return Ok(shares);
+         }
+ 
+@@ -26,7 +26,7 @@ namespace XOProject.Controller
+         [HttpGet("{symbol}/Latest")]
+         public async Task<IActionResult> GetLatestPrice([FromRoute]string symbol)
+         {
+-            var share = await _shareRepository.Query().Where(x => x.Symbol.Equals(symbol)).FirstOrDefaultAsync();
++            var share =  _shareRepository.Query().Where(x => x.Symbol.Equals(symbol)).FirstOrDefault();
+             return Ok(share?.Rate);
+         }
+ 
+diff --git a/XOProject/Controller/TradeController.cs b/XOProject/Controller/TradeController.cs
+index 583d211..bdcc318 100644
+--- a/XOProject/Controller/TradeController.cs
++++ b/XOProject/Controller/TradeController.cs
+@@ -27,7 +27,7 @@ namespace XOProject.Controller
+         [HttpGet("{portfolioid}")]
+         public async Task<IActionResult> GetAllTradings([FromRoute]int portFolioid)
+         {
+-            var trade = _tradeRepository.Query().Where(x => x.PortfolioId.Equals(portFolioid));
++            var trade =  _tradeRepository.Query().Where(x => x.PortfolioId.Equals(portFolioid));
+             return Ok(trade);
+         }
+ 
+@@ -43,6 +43,7 @@ namespace XOProject.Controller
+         public async Task<IActionResult> GetAnalysis([FromRoute]string symbol)
+         {
+             var result = new List<TradeAnalysis>();
++            result =  _tradeRepository.GetTradeAnalysis(symbol).ToList();
+             
+             return Ok(result);
+         }
+diff --git a/XOProject/Model/TradeAnalysis.cs b/XOProject/Model/TradeAnalysis.cs
+index 55cf46a..8fdcaad 100644
+--- a/XOProject/Model/TradeAnalysis.cs
++++ b/XOProject/Model/TradeAnalysis.cs
+@@ -16,5 +16,10 @@ namespace XOProject
+         public double Minimum { get; set; }
+ 
+         public string Action { get; set; }
++
++        public static implicit operator List<object>(TradeAnalysis v)
++        {
++            throw new NotImplementedException();
++        }
+     }
+ }
+diff --git a/XOProject/Repository/GenericRepository.cs b/XOProject/Repository/GenericRepository.cs
+index 9aa2497..44d994d 100644
+--- a/XOProject/Repository/GenericRepository.cs
++++ b/XOProject/Repository/GenericRepository.cs
+@@ -1,4 +1,5 @@
+-﻿using System.Linq;
++﻿using System;
++using System.Linq;
+ using System.Threading.Tasks;
+ using Microsoft.EntityFrameworkCore;
+ 
+@@ -30,5 +31,9 @@ namespace XOProject
+             _dbContext.Entry(entity).State = EntityState.Modified;
+             await _dbContext.SaveChangesAsync();
+         }
++        public  IQueryable<T> QueryWithOptions(Func<T, bool> where)
++        {
++            return _dbContext.Set<T>().Where(where).AsQueryable();
++        }
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/Repository/IGenericRepository.cs b/XOProject/Repository/IGenericRepository.cs
+index 150318e..4c5074f 100644
+--- a/XOProject/Repository/IGenericRepository.cs
++++ b/XOProject/Repository/IGenericRepository.cs
+@@ -1,3 +1,4 @@
++using System;
+ using System.Linq;
+ using System.Threading.Tasks;
+ 
+@@ -12,5 +13,6 @@ namespace XOProject
+         Task InsertAsync(T entity);
+ 
+         Task UpdateAsync(T entity);
++        IQueryable<T> QueryWithOptions(Func<T, bool> where);
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/Repository/IShareRepository.cs b/XOProject/Repository/IShareRepository.cs
+index 8ea8ff9..db47162 100644
+--- a/XOProject/Repository/IShareRepository.cs
++++ b/XOProject/Repository/IShareRepository.cs
+@@ -2,5 +2,6 @@
+ {
+     public interface IShareRepository : IGenericRepository<HourlyShareRate>
+     {
++       
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/Repository/ITradeRepository.cs b/XOProject/Repository/ITradeRepository.cs
+index f2cd3e4..bffb22d 100644
+--- a/XOProject/Repository/ITradeRepository.cs
++++ b/XOProject/Repository/ITradeRepository.cs
+@@ -1,6 +1,12 @@
+-﻿namespace XOProject
++﻿using System.Linq;
++using System.Threading;
++namespace XOProject
+ {
+     public interface ITradeRepository : IGenericRepository<Trade>
+     {
++        IQueryable<TradeAnalysis> GetTradeAnalysis(string symbol);
++       
++        
++
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/Repository/ShareRepository.cs b/XOProject/Repository/ShareRepository.cs
+index cf4f79f..700f308 100644
+--- a/XOProject/Repository/ShareRepository.cs
++++ b/XOProject/Repository/ShareRepository.cs
+@@ -6,5 +6,6 @@ namespace XOProject
+         {
+             _dbContext = dbContext;
+         }
++
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/Repository/TradeRepository.cs b/XOProject/Repository/TradeRepository.cs
+index 2836fb4..2c08a00 100644
+--- a/XOProject/Repository/TradeRepository.cs
++++ b/XOProject/Repository/TradeRepository.cs
+@@ -1,10 +1,30 @@
++using Microsoft.EntityFrameworkCore;
++using System.Linq;
++
+ namespace XOProject
+ {
+     public class TradeRepository : GenericRepository<Trade>, ITradeRepository
+     {
++
+         public TradeRepository(ExchangeContext dbContext)
+         {
+             _dbContext = dbContext;
+         }
++
++        
++
++        public IQueryable<TradeAnalysis> GetTradeAnalysis(string symbol)
++        {
++            var trades = QueryWithOptions(a => a.Symbol.Equals(symbol)).GroupBy(a => a.Action).Select(s => new TradeAnalysis
++            {
++                Maximum = s.Max(x=>x.NoOfShares), 
++                Minimum = s.Min(x=>x.NoOfShares),
++                Average = s.Average(x=>x.NoOfShares),
++                Sum =     s.Sum(x=>x.NoOfShares),
++                Action =  s.Key
++            });
++            return trades;
++        }
++
+     }
+ }
+\ No newline at end of file
+diff --git a/XOProject/appsettings.json b/XOProject/appsettings.json
+index 0a48178..770cd58 100644
+--- a/XOProject/appsettings.json
++++ b/XOProject/appsettings.json
+@@ -1,6 +1,6 @@
+ ﻿{
+   "ConnectionStrings": {
+-    "DefaultConnection": "Server=.\\SQLEXPRESS;Database=XOProjectDb;Trusted_Connection=True;"
++    "DefaultConnection": "Data Source=DESKTOP-US0HC5O;Initial Catalog=PersonsDB;User ID=sa; Password=Password123$"
+   },
+   "Logging": {
+     "IncludeScopes": false,
+diff --git a/coverage-hits.txt b/coverage-hits.txt
+new file mode 100644
+index 0000000..f8fd326
+--- /dev/null
++++ b/coverage-hits.txt
+@@ -0,0 +1,608 @@
++108
++109
++107
++61
++55
++51
++57
++45
++47
++49
++110
++112
++106
++111
++113
++44
++61
++55
++51
++57
++45
++47
++49
++110
++112
++106
++111
++113
++44
++61
++55
++51
++57
++47
++49
++114
++118
++116
++120
++106
++117
++121
++44
++46
++47
++49
++114
++118
++115
++119
++61
++55
++51
++57
++45
++47
++49
++45
++47
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++37
++41
++43
++39
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++36
++38
++40
++42
++44
++46
++48
++44
++44
++44
++44
++46
++44
++48
++48
++48
++50
++58
++44
++58
++59
++50
++50
++50
++60
++54
++58
++56
++52
++50
++58
++58
++48
++48
++48
++44
++58
++44
++46
++44
++48
++50
++60
++54
++58
++56
++52
++50
++58
++44
++44
++46
++50
++50
++60
++54
++58
++56
++52
++44
++46
++50
++60
++54
++58
++56
++52
++95
++96
++82
++97
++81
++53
++61
++51
++55
++59
++57
++50
++58
++50
++50
++50
++60
++54
++58
++56
++52
++50
++58
++53
++61
++51
++55
++59
++57
++50
++58
++50
++50
++50
++60
++54
++58
++56
++52
++50
++58
++50
++60
++54
++58
++56
++52
++50
++58
++50
++60
++54
++58
++56
++52
++50
++58
++50
++50
++60
++54
++58
++56
++52
++50
++50
++60
++54
++58
++56
++52
++50
++60
++54
++58
++56
++52
++50
++60
++54
++58
++56
++52
++100
++101
++82
++102
++84
++81
++103
++124
++125
++123
++41
++43
++39
++41
++43
++39
++130
++132
++122
++40
++131
++133
++42
++41
++43
++39
++41
++43
++39
++130
++132
++122
++40
++40
++131
++133
++42
++41
++43
++39
++41
++43
++39
++126
++128
++122
++127
++129
++40
++40
++41
++43
++39
++41
++43
++39
++126
++128
++122
++127
++129
++40
++40
++41
++43
++39
++134
++138
++136
++140
++122
++137
++141
++36
++41
++43
++39
++134
++138
++136
++140
++122
++137
++141
++36
++134
++138
++135
++139
++148
++149
++143
++150
++145
++151
++147
++53
++61
++51
++55
++59
++53
++61
++51
++55
++59
++152
++154
++144
++153
++155
++53
++61
++51
++55
++59
++53
++61
++51
++55
++59
++152
++154
++144
++153
++155
++53
++61
++51
++55
++59
++53
++61
++51
++55
++59
++152
++154
++144
++153
++155
++58
++58
++53
++61
++51
++55
++59
++53
++61
++51
++55
++59
++152
++154
++144
++153
++155
++58
++58
++53
++61
++51
++55
++59
++57
++53
++61
++51
++55
++59
++57
++52
++60
++52
++60
++54
++67
++54
++69
++54
++65
++54
++63
++71
++54
++67
++54
++69
++54
++65
++54
++63
++71
++156
++159
++157
++160
++144
++158
++161
++53
++61
++51
++55
++59
++57
++53
++61
++51
++55
++59
++57
++52
++60
++52
++60
++54
++54
++67
++54
++54
++69
++54
++54
++65
++54
++54
++63
++71
++156
++159
++157
++160
++144
++158
++161
++62
++62
++53
++61
++51
++55
++59
++57
++53
++61
++51
++55
++59
++57
++52
++60
++52
++60
++54
++54
++67
++54
++54
++69
++54
++54
++65
++54
++54
++63
++71
++156
++159
++157
++160
++144
++158
++161
+diff --git a/coverage-html/XOProject/Controller/PortfolioController.cs.html b/coverage-html/XOProject/Controller/PortfolioController.cs.html
+new file mode 100644
+index 0000000..bdee2b1
+--- /dev/null
++++ b/coverage-html/XOProject/Controller/PortfolioController.cs.html
+@@ -0,0 +1,45 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Mvc;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject.Controller</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    [Route(&quot;api/Portfolio&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class PortfolioController : ControllerBase</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        private IPortfolioRepository _portfolioRepository { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public PortfolioController(IShareRepository shareRepository, ITradeRepository tradeRepository, IPortfolioRepository portfolioRepository)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _portfolioRepository = portfolioRepository;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;{portFolioid}&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetPortfolioInfo([FromRoute]int portFolioid)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var portfolio = _portfolioRepository.GetAll().Where(x =&gt; x.Id.Equals(portFolioid));</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            </div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Ok(portfolio);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpPost]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; Post([FromBody]Portfolio value)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            if (!ModelState.IsValid)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
++<div style="white-space: pre;background-color: #D2EACE;">                return BadRequest(ModelState);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            await _portfolioRepository.InsertAsync(value);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Created($&quot;Portfolio/{value.Id}&quot;, value);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Controller/ShareController.cs.html b/coverage-html/XOProject/Controller/ShareController.cs.html
+new file mode 100644
+index 0000000..443fef1
+--- /dev/null
++++ b/coverage-html/XOProject/Controller/ShareController.cs.html
+@@ -0,0 +1,51 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Mvc;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject.Controller</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    [Route(&quot;api/Share&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class ShareController : ControllerBase</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public IShareRepository _shareRepository { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public ShareController(IShareRepository shareRepository)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _shareRepository = shareRepository;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;{symbol}&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; Get([FromRoute]string symbol)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var shares = _shareRepository.Query().Where(x =&gt; x.Symbol.Equals(symbol));</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Ok(shares);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;{symbol}/Latest&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetLatestPrice([FromRoute]string symbol)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var share =  _shareRepository.Query().Where(x =&gt; x.Symbol.Equals(symbol)).FirstOrDefault();</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Ok(share?.Rate);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpPost]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; Post([FromBody]HourlyShareRate value)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            if (!ModelState.IsValid)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
++<div style="white-space: pre;background-color: #D2EACE;">                return BadRequest(ModelState);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            await _shareRepository.InsertAsync(value);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Created($&quot;Share/{value.Id}&quot;, value);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        </div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Controller/TradeController.cs.html b/coverage-html/XOProject/Controller/TradeController.cs.html
+new file mode 100644
+index 0000000..1acb403
+--- /dev/null
++++ b/coverage-html/XOProject/Controller/TradeController.cs.html
+@@ -0,0 +1,57 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Collections.Generic;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Http;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Mvc;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject.Controller</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    [Route(&quot;api/Trade/&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeController : ControllerBase</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        private IShareRepository _shareRepository { get; set; }</div>
++<div style="white-space: pre;background-color: #D2EACE;">        private ITradeRepository _tradeRepository { get; set; }</div>
++<div style="white-space: pre;background-color: #D2EACE;">        private IPortfolioRepository _portfolioRepository { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public TradeController(IShareRepository shareRepository, ITradeRepository tradeRepository, IPortfolioRepository portfolioRepository)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _shareRepository = shareRepository;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _tradeRepository = tradeRepository;</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _portfolioRepository = portfolioRepository;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;{portfolioid}&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetAllTradings([FromRoute]int portFolioid)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var trade =  _tradeRepository.Query().Where(x =&gt; x.PortfolioId.Equals(portFolioid));</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Ok(trade);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;summary&gt;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// For a given symbol of share, get the statistics for that particular share calculating the maximum, minimum, </div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// average and Sum of all the trades for that share individually grouped into Buy trade and Sell trade.</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;/summary&gt;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;param name=&quot;symbol&quot;&gt;&lt;/param&gt;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;returns&gt;&lt;/returns&gt;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;Analysis/{symbol}&quot;)]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetAnalysis([FromRoute]string symbol)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var result = new List&lt;TradeAnalysis&gt;();</div>
++<div style="white-space: pre;background-color: #D2EACE;">            result =  _tradeRepository.GetTradeAnalysis(symbol).ToList();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            </div>
++<div style="white-space: pre;background-color: #D2EACE;">            return Ok(result);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Exceptions/HttpStatusCodeException.cs.html b/coverage-html/XOProject/Exceptions/HttpStatusCodeException.cs.html
+new file mode 100644
+index 0000000..6315a43
+--- /dev/null
++++ b/coverage-html/XOProject/Exceptions/HttpStatusCodeException.cs.html
+@@ -0,0 +1,35 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Newtonsoft.Json.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class HttpStatusCodeException : Exception</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeException(int statusCode)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            StatusCode = statusCode;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeException(int statusCode, string message) : base(message)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            StatusCode = statusCode;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeException(int statusCode, Exception inner) : this(statusCode, inner.ToString())</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeException(int statusCode, JObject errorObject) : this(statusCode, errorObject.ToString())</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            ContentType = @&quot;application/json&quot;;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public int StatusCode { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public string ContentType { get; set; } = @&quot;text/plain&quot;;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddleware.cs.html b/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddleware.cs.html
+new file mode 100644
+index 0000000..d9dd03b
+--- /dev/null
++++ b/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddleware.cs.html
+@@ -0,0 +1,47 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Http;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.Extensions.Logging;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class HttpStatusCodeExceptionMiddleware</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        private readonly ILogger&lt;HttpStatusCodeExceptionMiddleware&gt; _logger;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        private readonly RequestDelegate _next;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeExceptionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            _next = next ?? throw new ArgumentNullException(nameof(next));</div>
++<div style="white-space: pre;background-color: #EACECC;">            _logger = loggerFactory?.CreateLogger&lt;HttpStatusCodeExceptionMiddleware&gt;() ??</div>
++<div style="white-space: pre;background-color: #EACECC;">                      throw new ArgumentNullException(nameof(loggerFactory));</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task Invoke(HttpContext context)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            try</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
++<div style="white-space: pre;background-color: #EACECC;">                await _next(context);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
++<div style="white-space: pre;background-color: #EACECC;">            catch (HttpStatusCodeException ex)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
++<div style="white-space: pre;background-color: #EACECC;">                if (context.Response.HasStarted)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">                {</div>
++<div style="white-space: pre;background-color: #EACECC;">                    _logger.LogWarning(</div>
++<div style="white-space: pre;background-color: #EACECC;">                        &quot;The response has already started, the http status code middleware will not be executed.&quot;);</div>
++<div style="white-space: pre;background-color: #EACECC;">                    throw;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">                }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">                context.Response.Clear();</div>
++<div style="white-space: pre;background-color: #EACECC;">                context.Response.StatusCode = ex.StatusCode;</div>
++<div style="white-space: pre;background-color: #EACECC;">                context.Response.ContentType = ex.ContentType;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EACECC;">                await context.Response.WriteAsync(ex.Message);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs.html b/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs.html
+new file mode 100644
+index 0000000..8137796
+--- /dev/null
++++ b/coverage-html/XOProject/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs.html
+@@ -0,0 +1,16 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Builder;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public static class HttpStatusCodeExceptionMiddlewareExtensions</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public static IApplicationBuilder UseHttpStatusCodeExceptionMiddleware(this IApplicationBuilder builder)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            return builder.UseMiddleware&lt;HttpStatusCodeExceptionMiddleware&gt;();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Model/HourlyShareRate.cs.html b/coverage-html/XOProject/Model/HourlyShareRate.cs.html
+new file mode 100644
+index 0000000..98c5d47
+--- /dev/null
++++ b/coverage-html/XOProject/Model/HourlyShareRate.cs.html
+@@ -0,0 +1,23 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.ComponentModel.DataAnnotations;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class HourlyShareRate</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public int Id { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public DateTime TimeStamp { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public string Symbol { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public decimal Rate { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Model/Portfolio.cs.html b/coverage-html/XOProject/Model/Portfolio.cs.html
+new file mode 100644
+index 0000000..da74c13
+--- /dev/null
++++ b/coverage-html/XOProject/Model/Portfolio.cs.html
+@@ -0,0 +1,20 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Collections.Generic;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.ComponentModel.DataAnnotations;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class Portfolio</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public int Id { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public string Name { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        </div>
++<div style="white-space: pre;background-color: #D2EACE;">        public List&lt;Trade&gt; Trade { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Model/Trade.cs.html b/coverage-html/XOProject/Model/Trade.cs.html
+new file mode 100644
+index 0000000..068fb4d
+--- /dev/null
++++ b/coverage-html/XOProject/Model/Trade.cs.html
+@@ -0,0 +1,21 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class Trade</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public int Id { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        </div>
++<div style="white-space: pre;background-color: #D2EACE;">        public string Symbol { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public int NoOfShares { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public decimal Price { get; set; }       </div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public int PortfolioId { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        </div>
++<div style="white-space: pre;background-color: #D2EACE;">        public string Action { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Model/TradeAnalysis.cs.html b/coverage-html/XOProject/Model/TradeAnalysis.cs.html
+new file mode 100644
+index 0000000..d3c8d3e
+--- /dev/null
++++ b/coverage-html/XOProject/Model/TradeAnalysis.cs.html
+@@ -0,0 +1,29 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Collections.Generic;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeAnalysis</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public double Sum { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public double Average { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public double Maximum { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public double Minimum { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public string Action { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public static implicit operator List&lt;object&gt;(TradeAnalysis v)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            throw new NotImplementedException();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Model/TradeModel.cs.html b/coverage-html/XOProject/Model/TradeModel.cs.html
+new file mode 100644
+index 0000000..e5b1f2a
+--- /dev/null
++++ b/coverage-html/XOProject/Model/TradeModel.cs.html
+@@ -0,0 +1,24 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System.ComponentModel.DataAnnotations;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeModel</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #EACECC;">        public string Symbol { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #EACECC;">        public int NoOfShares { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #EACECC;">        public int PortfolioId { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        [RegularExpression(&quot;BUY|SELL&quot;)]</div>
++<div style="white-space: pre;background-color: #EACECC;">        public string Action { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Repository/GenericRepository.cs.html b/coverage-html/XOProject/Repository/GenericRepository.cs.html
+new file mode 100644
+index 0000000..3cb910c
+--- /dev/null
++++ b/coverage-html/XOProject/Repository/GenericRepository.cs.html
+@@ -0,0 +1,43 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public abstract class GenericRepository&lt;T&gt; : IGenericRepository&lt;T&gt;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        where T : class, new()</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        protected ExchangeContext _dbContext { get; set; }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;T&gt; GetAsync(string id)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            return await _dbContext.FindAsync&lt;T&gt;(id);</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public IQueryable&lt;T&gt; Query()</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            return _dbContext.Set&lt;T&gt;().AsQueryable();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task InsertAsync(T entity)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            _dbContext.Set&lt;T&gt;().Add(entity);</div>
++<div style="white-space: pre;background-color: #EACECC;">            await _dbContext.SaveChangesAsync();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public async Task UpdateAsync(T entity)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            _dbContext.Entry(entity).State = EntityState.Modified;</div>
++<div style="white-space: pre;background-color: #EACECC;">            await _dbContext.SaveChangesAsync();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public  IQueryable&lt;T&gt; QueryWithOptions(Func&lt;T, bool&gt; where)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return _dbContext.Set&lt;T&gt;().Where(where).AsQueryable();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Repository/PortfolioRepository.cs.html b/coverage-html/XOProject/Repository/PortfolioRepository.cs.html
+new file mode 100644
+index 0000000..c81c265
+--- /dev/null
++++ b/coverage-html/XOProject/Repository/PortfolioRepository.cs.html
+@@ -0,0 +1,22 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class PortfolioRepository : GenericRepository&lt;Portfolio&gt;, IPortfolioRepository</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public PortfolioRepository(ExchangeContext dbContext)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _dbContext = dbContext;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public IQueryable&lt;Portfolio&gt; GetAll()</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return _dbContext.Portfolios.Include(x =&gt; x.Trade).AsQueryable();</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Repository/ShareRepository.cs.html b/coverage-html/XOProject/Repository/ShareRepository.cs.html
+new file mode 100644
+index 0000000..7264acd
+--- /dev/null
++++ b/coverage-html/XOProject/Repository/ShareRepository.cs.html
+@@ -0,0 +1,15 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class ShareRepository : GenericRepository&lt;HourlyShareRate&gt;, IShareRepository</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EACECC;">        public ShareRepository(ExchangeContext dbContext)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #EACECC;">            _dbContext = dbContext;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/XOProject/Repository/TradeRepository.cs.html b/coverage-html/XOProject/Repository/TradeRepository.cs.html
+new file mode 100644
+index 0000000..ce52d1d
+--- /dev/null
++++ b/coverage-html/XOProject/Repository/TradeRepository.cs.html
+@@ -0,0 +1,34 @@
++<html>
++<body style="font-family: monospace;">
++<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
++<div style="white-space: pre;background-color: #EEF4ED;">{</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeRepository : GenericRepository&lt;Trade&gt;, ITradeRepository</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #D2EACE;">        public TradeRepository(ExchangeContext dbContext)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            _dbContext = dbContext;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        </div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        public IQueryable&lt;TradeAnalysis&gt; GetTradeAnalysis(string symbol)</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
++<div style="white-space: pre;background-color: #D2EACE;">            var trades = QueryWithOptions(a =&gt; a.Symbol.Equals(symbol)).GroupBy(a =&gt; a.Action).Select(s =&gt; new TradeAnalysis</div>
++<div style="white-space: pre;background-color: #D2EACE;">            {</div>
++<div style="white-space: pre;background-color: #D2EACE;">                Maximum = s.Max(x=&gt;x.NoOfShares), </div>
++<div style="white-space: pre;background-color: #D2EACE;">                Minimum = s.Min(x=&gt;x.NoOfShares),</div>
++<div style="white-space: pre;background-color: #D2EACE;">                Average = s.Average(x=&gt;x.NoOfShares),</div>
++<div style="white-space: pre;background-color: #D2EACE;">                Sum =     s.Sum(x=&gt;x.NoOfShares),</div>
++<div style="white-space: pre;background-color: #D2EACE;">                Action =  s.Key</div>
++<div style="white-space: pre;background-color: #D2EACE;">            });</div>
++<div style="white-space: pre;background-color: #D2EACE;">            return trades;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
++<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
++<div style="white-space: pre;background-color: #EEF4ED;">}</div>
++</body>
++</html>
+diff --git a/coverage-html/index.html b/coverage-html/index.html
+new file mode 100644
+index 0000000..40ae06d
+--- /dev/null
++++ b/coverage-html/index.html
+@@ -0,0 +1,112 @@
++<html>
++<body style="font-family: sans-serif;">
++<h1>Summary</h1>
++<table border="1" cellpadding="5">
++<tr><th>Generated on</th><td>2018-09-29 10:17:15 AM</td></tr>
++<tr><th>Lines</th><td>103</td></tr>
++<tr><th>Covered Lines</th><td>66</td></tr>
++<tr><th>Threshold</th><td>60.00%</td></tr>
++<tr><th>Percentage</th><td style="background-color: #D2EACE;">64.08%</td></tr>
++</table>
++<h1>Coverage</h1>
++<table border="1" cellpadding="5">
++<tr>
++<th>File</th>
++<th>Lines</th>
++<th>Covered Lines</th>
++<th>Percentage</th>
++</tr>
++<tr>
++<td><a href="XOProject\Controller\PortfolioController.cs.html">XOProject\Controller\PortfolioController.cs</a></td>
++<td>9</td>
++<td>9</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Controller\ShareController.cs.html">XOProject\Controller\ShareController.cs</a></td>
++<td>11</td>
++<td>11</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Controller\TradeController.cs.html">XOProject\Controller\TradeController.cs</a></td>
++<td>12</td>
++<td>12</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Exceptions\HttpStatusCodeException.cs.html">XOProject\Exceptions\HttpStatusCodeException.cs</a></td>
++<td>9</td>
++<td>0</td>
++<td style="background-color: #EACECC;">0.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Exceptions\HttpStatusCodeExceptionMiddleware.cs.html">XOProject\Exceptions\HttpStatusCodeExceptionMiddleware.cs</a></td>
++<td>14</td>
++<td>0</td>
++<td style="background-color: #EACECC;">0.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Exceptions\HttpStatusCodeExceptionMiddlewareExtensions.cs.html">XOProject\Exceptions\HttpStatusCodeExceptionMiddlewareExtensions.cs</a></td>
++<td>1</td>
++<td>0</td>
++<td style="background-color: #EACECC;">0.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Model\HourlyShareRate.cs.html">XOProject\Model\HourlyShareRate.cs</a></td>
++<td>4</td>
++<td>4</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Model\Portfolio.cs.html">XOProject\Model\Portfolio.cs</a></td>
++<td>3</td>
++<td>3</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Model\Trade.cs.html">XOProject\Model\Trade.cs</a></td>
++<td>6</td>
++<td>6</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Model\TradeAnalysis.cs.html">XOProject\Model\TradeAnalysis.cs</a></td>
++<td>6</td>
++<td>5</td>
++<td style="background-color: #D2EACE;">83.33%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Model\TradeModel.cs.html">XOProject\Model\TradeModel.cs</a></td>
++<td>4</td>
++<td>0</td>
++<td style="background-color: #EACECC;">0.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Repository\GenericRepository.cs.html">XOProject\Repository\GenericRepository.cs</a></td>
++<td>8</td>
++<td>2</td>
++<td style="background-color: #EACECC;">25.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Repository\PortfolioRepository.cs.html">XOProject\Repository\PortfolioRepository.cs</a></td>
++<td>3</td>
++<td>3</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Repository\ShareRepository.cs.html">XOProject\Repository\ShareRepository.cs</a></td>
++<td>2</td>
++<td>0</td>
++<td style="background-color: #EACECC;">0.00%</td>
++</tr>
++<tr>
++<td><a href="XOProject\Repository\TradeRepository.cs.html">XOProject\Repository\TradeRepository.cs</a></td>
++<td>11</td>
++<td>11</td>
++<td style="background-color: #D2EACE;">100.00%</td>
++</tr>
++</table>
++</body>
++</html>
++
+diff --git a/coverage.json b/coverage.json
+new file mode 100644
+index 0000000..99ae78c
+--- /dev/null
++++ b/coverage.json
+@@ -0,0 +1,1853 @@
++{
++  "SourcePath": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\",
++  "HitsFile": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\coverage-hits.txt",
++  "ExtraAssemblies": [
++    "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\XOProject.Tests\\bin\\Debug\\netcoreapp2.0\\dotnet-minicover.dll"
++  ],
++  "Assemblies": [
++    {
++      "Name": "XO-Project",
++      "SourceFiles": {
++        "XOProject\\Controller\\PortfolioController.cs": {
++          "Instructions": [
++            {
++              "Id": 106,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 61,
++              "EndColumn": 65,
++              "Class": "XOProject.Controller.PortfolioController",
++              "Method": "get__portfolioRepository",
++              "MethodFullName": "XOProject.IPortfolioRepository XOProject.Controller.PortfolioController::get__portfolioRepository()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 107,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 66,
++              "EndColumn": 70,
++              "Class": "XOProject.Controller.PortfolioController",
++              "Method": "set__portfolioRepository",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController::set__portfolioRepository(XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 108,
++              "StartLine": 12,
++              "EndLine": 12,
++              "StartColumn": 9,
++              "EndColumn": 145,
++              "Class": "XOProject.Controller.PortfolioController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 109,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 13,
++              "EndColumn": 56,
++              "Class": "XOProject.Controller.PortfolioController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 110,
++              "StartLine": 20,
++              "EndLine": 20,
++              "StartColumn": 13,
++              "EndColumn": 96,
++              "Class": "XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 111,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 34,
++              "Class": "XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 112,
++              "StartLine": 20,
++              "EndLine": 20,
++              "StartColumn": 13,
++              "EndColumn": 96,
++              "Class": "XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 113,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 34,
++              "Class": "XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<GetPortfolioInfo>d__5::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 114,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_0012: ldarg "
++            },
++            {
++              "Id": 115,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 17,
++              "EndColumn": 47,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 116,
++              "StartLine": 34,
++              "EndLine": 34,
++              "StartColumn": 13,
++              "EndColumn": 59,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_0046: ldarg "
++            },
++            {
++              "Id": 117,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 13,
++              "EndColumn": 60,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_00b7: ldarg "
++            },
++            {
++              "Id": 118,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_0012: ldarg "
++            },
++            {
++              "Id": 119,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 17,
++              "EndColumn": 47,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 120,
++              "StartLine": 34,
++              "EndLine": 34,
++              "StartColumn": 13,
++              "EndColumn": 59,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_0046: ldarg "
++            },
++            {
++              "Id": 121,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 13,
++              "EndColumn": 60,
++              "Class": "XOProject.Controller.PortfolioController/<Post>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.PortfolioController/<Post>d__6::MoveNext()",
++              "Instruction": "IL_00b7: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Controller\\ShareController.cs": {
++          "Instructions": [
++            {
++              "Id": 122,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 52,
++              "EndColumn": 56,
++              "Class": "XOProject.Controller.ShareController",
++              "Method": "get__shareRepository",
++              "MethodFullName": "XOProject.IShareRepository XOProject.Controller.ShareController::get__shareRepository()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 123,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 57,
++              "EndColumn": 61,
++              "Class": "XOProject.Controller.ShareController",
++              "Method": "set__shareRepository",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController::set__shareRepository(XOProject.IShareRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 124,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 9,
++              "EndColumn": 65,
++              "Class": "XOProject.Controller.ShareController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController::.ctor(XOProject.IShareRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 125,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 48,
++              "Class": "XOProject.Controller.ShareController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController::.ctor(XOProject.IShareRepository)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 126,
++              "StartLine": 21,
++              "EndLine": 21,
++              "StartColumn": 13,
++              "EndColumn": 87,
++              "Class": "XOProject.Controller.ShareController/<Get>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Get>d__5::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 127,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 31,
++              "Class": "XOProject.Controller.ShareController/<Get>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Get>d__5::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 128,
++              "StartLine": 21,
++              "EndLine": 21,
++              "StartColumn": 13,
++              "EndColumn": 87,
++              "Class": "XOProject.Controller.ShareController/<Get>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Get>d__5::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 129,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 31,
++              "Class": "XOProject.Controller.ShareController/<Get>d__5",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Get>d__5::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 130,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 13,
++              "EndColumn": 104,
++              "Class": "XOProject.Controller.ShareController/<GetLatestPrice>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<GetLatestPrice>d__6::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 131,
++              "StartLine": 30,
++              "EndLine": 30,
++              "StartColumn": 13,
++              "EndColumn": 36,
++              "Class": "XOProject.Controller.ShareController/<GetLatestPrice>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<GetLatestPrice>d__6::MoveNext()",
++              "Instruction": "IL_00be: ldarg "
++            },
++            {
++              "Id": 132,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 13,
++              "EndColumn": 104,
++              "Class": "XOProject.Controller.ShareController/<GetLatestPrice>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<GetLatestPrice>d__6::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 133,
++              "StartLine": 30,
++              "EndLine": 30,
++              "StartColumn": 13,
++              "EndColumn": 36,
++              "Class": "XOProject.Controller.ShareController/<GetLatestPrice>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<GetLatestPrice>d__6::MoveNext()",
++              "Instruction": "IL_00be: ldarg "
++            },
++            {
++              "Id": 134,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_0012: ldarg "
++            },
++            {
++              "Id": 135,
++              "StartLine": 38,
++              "EndLine": 38,
++              "StartColumn": 17,
++              "EndColumn": 47,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 136,
++              "StartLine": 41,
++              "EndLine": 41,
++              "StartColumn": 13,
++              "EndColumn": 55,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_0046: ldarg "
++            },
++            {
++              "Id": 137,
++              "StartLine": 43,
++              "EndLine": 43,
++              "StartColumn": 13,
++              "EndColumn": 56,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_00b7: ldarg "
++            },
++            {
++              "Id": 138,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_0012: ldarg "
++            },
++            {
++              "Id": 139,
++              "StartLine": 38,
++              "EndLine": 38,
++              "StartColumn": 17,
++              "EndColumn": 47,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 140,
++              "StartLine": 41,
++              "EndLine": 41,
++              "StartColumn": 13,
++              "EndColumn": 55,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_0046: ldarg "
++            },
++            {
++              "Id": 141,
++              "StartLine": 43,
++              "EndLine": 43,
++              "StartColumn": 13,
++              "EndColumn": 56,
++              "Class": "XOProject.Controller.ShareController/<Post>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.ShareController/<Post>d__7::MoveNext()",
++              "Instruction": "IL_00b7: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Controller\\TradeController.cs": {
++          "Instructions": [
++            {
++              "Id": 142,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 53,
++              "EndColumn": 57,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "get__shareRepository",
++              "MethodFullName": "XOProject.IShareRepository XOProject.Controller.TradeController::get__shareRepository()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 143,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 58,
++              "EndColumn": 62,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "set__shareRepository",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::set__shareRepository(XOProject.IShareRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 144,
++              "StartLine": 16,
++              "EndLine": 16,
++              "StartColumn": 53,
++              "EndColumn": 57,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "get__tradeRepository",
++              "MethodFullName": "XOProject.ITradeRepository XOProject.Controller.TradeController::get__tradeRepository()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 145,
++              "StartLine": 16,
++              "EndLine": 16,
++              "StartColumn": 58,
++              "EndColumn": 62,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "set__tradeRepository",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::set__tradeRepository(XOProject.ITradeRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 146,
++              "StartLine": 17,
++              "EndLine": 17,
++              "StartColumn": 61,
++              "EndColumn": 65,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "get__portfolioRepository",
++              "MethodFullName": "XOProject.IPortfolioRepository XOProject.Controller.TradeController::get__portfolioRepository()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 147,
++              "StartLine": 17,
++              "EndLine": 17,
++              "StartColumn": 66,
++              "EndColumn": 70,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": "set__portfolioRepository",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::set__portfolioRepository(XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 148,
++              "StartLine": 19,
++              "EndLine": 19,
++              "StartColumn": 9,
++              "EndColumn": 141,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 149,
++              "StartLine": 21,
++              "EndLine": 21,
++              "StartColumn": 13,
++              "EndColumn": 48,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 150,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 48,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0010: ldarg "
++            },
++            {
++              "Id": 151,
++              "StartLine": 23,
++              "EndLine": 23,
++              "StartColumn": 13,
++              "EndColumn": 56,
++              "Class": "XOProject.Controller.TradeController",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController::.ctor(XOProject.IShareRepository,XOProject.ITradeRepository,XOProject.IPortfolioRepository)",
++              "Instruction": "IL_0018: ldarg "
++            },
++            {
++              "Id": 152,
++              "StartLine": 30,
++              "EndLine": 30,
++              "StartColumn": 13,
++              "EndColumn": 97,
++              "Class": "XOProject.Controller.TradeController/<GetAllTradings>d__13",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAllTradings>d__13::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 153,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 13,
++              "EndColumn": 30,
++              "Class": "XOProject.Controller.TradeController/<GetAllTradings>d__13",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAllTradings>d__13::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 154,
++              "StartLine": 30,
++              "EndLine": 30,
++              "StartColumn": 13,
++              "EndColumn": 97,
++              "Class": "XOProject.Controller.TradeController/<GetAllTradings>d__13",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAllTradings>d__13::MoveNext()",
++              "Instruction": "IL_0024: ldarg "
++            },
++            {
++              "Id": 155,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 13,
++              "EndColumn": 30,
++              "Class": "XOProject.Controller.TradeController/<GetAllTradings>d__13",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAllTradings>d__13::MoveNext()",
++              "Instruction": "IL_00b9: ldarg "
++            },
++            {
++              "Id": 156,
++              "StartLine": 45,
++              "EndLine": 45,
++              "StartColumn": 13,
++              "EndColumn": 52,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 157,
++              "StartLine": 46,
++              "EndLine": 46,
++              "StartColumn": 13,
++              "EndColumn": 74,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0013: ldarg "
++            },
++            {
++              "Id": 158,
++              "StartLine": 48,
++              "EndLine": 48,
++              "StartColumn": 13,
++              "EndColumn": 31,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0034: ldarg "
++            },
++            {
++              "Id": 159,
++              "StartLine": 45,
++              "EndLine": 45,
++              "StartColumn": 13,
++              "EndColumn": 52,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 160,
++              "StartLine": 46,
++              "EndLine": 46,
++              "StartColumn": 13,
++              "EndColumn": 74,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0013: ldarg "
++            },
++            {
++              "Id": 161,
++              "StartLine": 48,
++              "EndLine": 48,
++              "StartColumn": 13,
++              "EndColumn": 31,
++              "Class": "XOProject.Controller.TradeController/<GetAnalysis>d__14",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.Controller.TradeController/<GetAnalysis>d__14::MoveNext()",
++              "Instruction": "IL_0034: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Exceptions\\HttpStatusCodeException.cs": {
++          "Instructions": [
++            {
++              "Id": 1,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 51,
++              "EndColumn": 64,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 2,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 9,
++              "EndColumn": 55,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32)",
++              "Instruction": "IL_000b: ldarg "
++            },
++            {
++              "Id": 3,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32)",
++              "Instruction": "IL_0013: ldarg "
++            },
++            {
++              "Id": 4,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 51,
++              "EndColumn": 64,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 5,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 74,
++              "EndColumn": 87,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,System.String)",
++              "Instruction": "IL_000b: ldarg "
++            },
++            {
++              "Id": 6,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 37,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,System.String)",
++              "Instruction": "IL_0014: ldarg "
++            },
++            {
++              "Id": 7,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 75,
++              "EndColumn": 109,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,System.Exception)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 8,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 79,
++              "EndColumn": 119,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,Newtonsoft.Json.Linq.JObject)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 9,
++              "StartLine": 24,
++              "EndLine": 24,
++              "StartColumn": 13,
++              "EndColumn": 47,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::.ctor(System.Int32,Newtonsoft.Json.Linq.JObject)",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 10,
++              "StartLine": 27,
++              "EndLine": 27,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": "get_StatusCode",
++              "MethodFullName": "System.Int32 XOProject.HttpStatusCodeException::get_StatusCode()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 11,
++              "StartLine": 27,
++              "EndLine": 27,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": "set_StatusCode",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::set_StatusCode(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 12,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": "get_ContentType",
++              "MethodFullName": "System.String XOProject.HttpStatusCodeException::get_ContentType()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 13,
++              "StartLine": 29,
++              "EndLine": 29,
++              "StartColumn": 42,
++              "EndColumn": 46,
++              "Class": "XOProject.HttpStatusCodeException",
++              "Method": "set_ContentType",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeException::set_ContentType(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Exceptions\\HttpStatusCodeExceptionMiddleware.cs": {
++          "Instructions": [
++            {
++              "Id": 14,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 9,
++              "EndColumn": 101,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware::.ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILoggerFactory)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 15,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 75,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware::.ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILoggerFactory)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 16,
++              "StartLine": 16,
++              "EndLine": 17,
++              "StartColumn": 13,
++              "EndColumn": 78,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware::.ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILoggerFactory)",
++              "Instruction": "IL_001e: ldarg "
++            },
++            {
++              "Id": 17,
++              "StartLine": 24,
++              "EndLine": 24,
++              "StartColumn": 17,
++              "EndColumn": 38,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 18,
++              "StartLine": 26,
++              "EndLine": 26,
++              "StartColumn": 13,
++              "EndColumn": 47,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_009d: stloc V_3"
++            },
++            {
++              "Id": 19,
++              "StartLine": 28,
++              "EndLine": 28,
++              "StartColumn": 17,
++              "EndColumn": 49,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_00d2: ldarg "
++            },
++            {
++              "Id": 20,
++              "StartLine": 30,
++              "EndLine": 31,
++              "StartColumn": 21,
++              "EndColumn": 116,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_00e9: ldarg "
++            },
++            {
++              "Id": 21,
++              "StartLine": 32,
++              "EndLine": 32,
++              "StartColumn": 21,
++              "EndColumn": 27,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0104: ldarg "
++            },
++            {
++              "Id": 22,
++              "StartLine": 35,
++              "EndLine": 35,
++              "StartColumn": 17,
++              "EndColumn": 42,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_012a: ldarg "
++            },
++            {
++              "Id": 23,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 17,
++              "EndColumn": 61,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_013b: ldarg "
++            },
++            {
++              "Id": 24,
++              "StartLine": 37,
++              "EndLine": 37,
++              "StartColumn": 17,
++              "EndColumn": 63,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0157: ldarg "
++            },
++            {
++              "Id": 25,
++              "StartLine": 39,
++              "EndLine": 39,
++              "StartColumn": 17,
++              "EndColumn": 63,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0173: ldarg "
++            },
++            {
++              "Id": 26,
++              "StartLine": 24,
++              "EndLine": 24,
++              "StartColumn": 17,
++              "EndColumn": 38,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_002a: ldarg "
++            },
++            {
++              "Id": 27,
++              "StartLine": 26,
++              "EndLine": 26,
++              "StartColumn": 13,
++              "EndColumn": 47,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_009d: stloc V_3"
++            },
++            {
++              "Id": 28,
++              "StartLine": 28,
++              "EndLine": 28,
++              "StartColumn": 17,
++              "EndColumn": 49,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_00d2: ldarg "
++            },
++            {
++              "Id": 29,
++              "StartLine": 30,
++              "EndLine": 31,
++              "StartColumn": 21,
++              "EndColumn": 116,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_00e9: ldarg "
++            },
++            {
++              "Id": 30,
++              "StartLine": 32,
++              "EndLine": 32,
++              "StartColumn": 21,
++              "EndColumn": 27,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0104: ldarg "
++            },
++            {
++              "Id": 31,
++              "StartLine": 35,
++              "EndLine": 35,
++              "StartColumn": 17,
++              "EndColumn": 42,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_012a: ldarg "
++            },
++            {
++              "Id": 32,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 17,
++              "EndColumn": 61,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_013b: ldarg "
++            },
++            {
++              "Id": 33,
++              "StartLine": 37,
++              "EndLine": 37,
++              "StartColumn": 17,
++              "EndColumn": 63,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0157: ldarg "
++            },
++            {
++              "Id": 34,
++              "StartLine": 39,
++              "EndLine": 39,
++              "StartColumn": 17,
++              "EndColumn": 63,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.HttpStatusCodeExceptionMiddleware/<Invoke>d__3::MoveNext()",
++              "Instruction": "IL_0173: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Exceptions\\HttpStatusCodeExceptionMiddlewareExtensions.cs": {
++          "Instructions": [
++            {
++              "Id": 35,
++              "StartLine": 9,
++              "EndLine": 9,
++              "StartColumn": 13,
++              "EndColumn": 79,
++              "Class": "XOProject.HttpStatusCodeExceptionMiddlewareExtensions",
++              "Method": "UseHttpStatusCodeExceptionMiddleware",
++              "MethodFullName": "Microsoft.AspNetCore.Builder.IApplicationBuilder XOProject.HttpStatusCodeExceptionMiddlewareExtensions::UseHttpStatusCodeExceptionMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)",
++              "Instruction": "IL_0001: ldarg builder"
++            }
++          ]
++        },
++        "XOProject\\Model\\HourlyShareRate.cs": {
++          "Instructions": [
++            {
++              "Id": 36,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 25,
++              "EndColumn": 29,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "get_Id",
++              "MethodFullName": "System.Int32 XOProject.HourlyShareRate::get_Id()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 37,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 30,
++              "EndColumn": 34,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "set_Id",
++              "MethodFullName": "System.Void XOProject.HourlyShareRate::set_Id(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 38,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "get_TimeStamp",
++              "MethodFullName": "System.DateTime XOProject.HourlyShareRate::get_TimeStamp()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 39,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 42,
++              "EndColumn": 46,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "set_TimeStamp",
++              "MethodFullName": "System.Void XOProject.HourlyShareRate::set_TimeStamp(System.DateTime)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 40,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "get_Symbol",
++              "MethodFullName": "System.String XOProject.HourlyShareRate::get_Symbol()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 41,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "set_Symbol",
++              "MethodFullName": "System.Void XOProject.HourlyShareRate::set_Symbol(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 42,
++              "StartLine": 17,
++              "EndLine": 17,
++              "StartColumn": 31,
++              "EndColumn": 35,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "get_Rate",
++              "MethodFullName": "System.Decimal XOProject.HourlyShareRate::get_Rate()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 43,
++              "StartLine": 17,
++              "EndLine": 17,
++              "StartColumn": 36,
++              "EndColumn": 40,
++              "Class": "XOProject.HourlyShareRate",
++              "Method": "set_Rate",
++              "MethodFullName": "System.Void XOProject.HourlyShareRate::set_Rate(System.Decimal)",
++              "Instruction": "IL_0000: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Model\\Portfolio.cs": {
++          "Instructions": [
++            {
++              "Id": 44,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 25,
++              "EndColumn": 29,
++              "Class": "XOProject.Portfolio",
++              "Method": "get_Id",
++              "MethodFullName": "System.Int32 XOProject.Portfolio::get_Id()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 45,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 30,
++              "EndColumn": 34,
++              "Class": "XOProject.Portfolio",
++              "Method": "set_Id",
++              "MethodFullName": "System.Void XOProject.Portfolio::set_Id(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 46,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 30,
++              "EndColumn": 34,
++              "Class": "XOProject.Portfolio",
++              "Method": "get_Name",
++              "MethodFullName": "System.String XOProject.Portfolio::get_Name()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 47,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 35,
++              "EndColumn": 39,
++              "Class": "XOProject.Portfolio",
++              "Method": "set_Name",
++              "MethodFullName": "System.Void XOProject.Portfolio::set_Name(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 48,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 36,
++              "EndColumn": 40,
++              "Class": "XOProject.Portfolio",
++              "Method": "get_Trade",
++              "MethodFullName": "System.Collections.Generic.List`1<XOProject.Trade> XOProject.Portfolio::get_Trade()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 49,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 41,
++              "EndColumn": 45,
++              "Class": "XOProject.Portfolio",
++              "Method": "set_Trade",
++              "MethodFullName": "System.Void XOProject.Portfolio::set_Trade(System.Collections.Generic.List`1<XOProject.Trade>)",
++              "Instruction": "IL_0000: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Model\\Trade.cs": {
++          "Instructions": [
++            {
++              "Id": 50,
++              "StartLine": 5,
++              "EndLine": 5,
++              "StartColumn": 25,
++              "EndColumn": 29,
++              "Class": "XOProject.Trade",
++              "Method": "get_Id",
++              "MethodFullName": "System.Int32 XOProject.Trade::get_Id()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 51,
++              "StartLine": 5,
++              "EndLine": 5,
++              "StartColumn": 30,
++              "EndColumn": 34,
++              "Class": "XOProject.Trade",
++              "Method": "set_Id",
++              "MethodFullName": "System.Void XOProject.Trade::set_Id(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 52,
++              "StartLine": 7,
++              "EndLine": 7,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.Trade",
++              "Method": "get_Symbol",
++              "MethodFullName": "System.String XOProject.Trade::get_Symbol()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 53,
++              "StartLine": 7,
++              "EndLine": 7,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.Trade",
++              "Method": "set_Symbol",
++              "MethodFullName": "System.Void XOProject.Trade::set_Symbol(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 54,
++              "StartLine": 9,
++              "EndLine": 9,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.Trade",
++              "Method": "get_NoOfShares",
++              "MethodFullName": "System.Int32 XOProject.Trade::get_NoOfShares()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 55,
++              "StartLine": 9,
++              "EndLine": 9,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.Trade",
++              "Method": "set_NoOfShares",
++              "MethodFullName": "System.Void XOProject.Trade::set_NoOfShares(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 56,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.Trade",
++              "Method": "get_Price",
++              "MethodFullName": "System.Decimal XOProject.Trade::get_Price()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 57,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.Trade",
++              "Method": "set_Price",
++              "MethodFullName": "System.Void XOProject.Trade::set_Price(System.Decimal)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 58,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 34,
++              "EndColumn": 38,
++              "Class": "XOProject.Trade",
++              "Method": "get_PortfolioId",
++              "MethodFullName": "System.Int32 XOProject.Trade::get_PortfolioId()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 59,
++              "StartLine": 13,
++              "EndLine": 13,
++              "StartColumn": 39,
++              "EndColumn": 43,
++              "Class": "XOProject.Trade",
++              "Method": "set_PortfolioId",
++              "MethodFullName": "System.Void XOProject.Trade::set_PortfolioId(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 60,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.Trade",
++              "Method": "get_Action",
++              "MethodFullName": "System.String XOProject.Trade::get_Action()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 61,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.Trade",
++              "Method": "set_Action",
++              "MethodFullName": "System.Void XOProject.Trade::set_Action(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Model\\TradeAnalysis.cs": {
++          "Instructions": [
++            {
++              "Id": 62,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 29,
++              "EndColumn": 33,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "get_Sum",
++              "MethodFullName": "System.Double XOProject.TradeAnalysis::get_Sum()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 63,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 34,
++              "EndColumn": 38,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "set_Sum",
++              "MethodFullName": "System.Void XOProject.TradeAnalysis::set_Sum(System.Double)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 64,
++              "StartLine": 12,
++              "EndLine": 12,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "get_Average",
++              "MethodFullName": "System.Double XOProject.TradeAnalysis::get_Average()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 65,
++              "StartLine": 12,
++              "EndLine": 12,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "set_Average",
++              "MethodFullName": "System.Void XOProject.TradeAnalysis::set_Average(System.Double)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 66,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "get_Maximum",
++              "MethodFullName": "System.Double XOProject.TradeAnalysis::get_Maximum()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 67,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "set_Maximum",
++              "MethodFullName": "System.Void XOProject.TradeAnalysis::set_Maximum(System.Double)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 68,
++              "StartLine": 16,
++              "EndLine": 16,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "get_Minimum",
++              "MethodFullName": "System.Double XOProject.TradeAnalysis::get_Minimum()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 69,
++              "StartLine": 16,
++              "EndLine": 16,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "set_Minimum",
++              "MethodFullName": "System.Void XOProject.TradeAnalysis::set_Minimum(System.Double)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 70,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "get_Action",
++              "MethodFullName": "System.String XOProject.TradeAnalysis::get_Action()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 71,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "set_Action",
++              "MethodFullName": "System.Void XOProject.TradeAnalysis::set_Action(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 72,
++              "StartLine": 22,
++              "EndLine": 22,
++              "StartColumn": 13,
++              "EndColumn": 49,
++              "Class": "XOProject.TradeAnalysis",
++              "Method": "op_Implicit",
++              "MethodFullName": "System.Collections.Generic.List`1<System.Object> XOProject.TradeAnalysis::op_Implicit(XOProject.TradeAnalysis)",
++              "Instruction": "IL_0001: newobj System.Void System.NotImplementedException::.ctor()"
++            }
++          ]
++        },
++        "XOProject\\Model\\TradeModel.cs": {
++          "Instructions": [
++            {
++              "Id": 73,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.TradeModel",
++              "Method": "get_Symbol",
++              "MethodFullName": "System.String XOProject.TradeModel::get_Symbol()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 74,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.TradeModel",
++              "Method": "set_Symbol",
++              "MethodFullName": "System.Void XOProject.TradeModel::set_Symbol(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 75,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 33,
++              "EndColumn": 37,
++              "Class": "XOProject.TradeModel",
++              "Method": "get_NoOfShares",
++              "MethodFullName": "System.Int32 XOProject.TradeModel::get_NoOfShares()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 76,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 38,
++              "EndColumn": 42,
++              "Class": "XOProject.TradeModel",
++              "Method": "set_NoOfShares",
++              "MethodFullName": "System.Void XOProject.TradeModel::set_NoOfShares(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 77,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 34,
++              "EndColumn": 38,
++              "Class": "XOProject.TradeModel",
++              "Method": "get_PortfolioId",
++              "MethodFullName": "System.Int32 XOProject.TradeModel::get_PortfolioId()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 78,
++              "StartLine": 14,
++              "EndLine": 14,
++              "StartColumn": 39,
++              "EndColumn": 43,
++              "Class": "XOProject.TradeModel",
++              "Method": "set_PortfolioId",
++              "MethodFullName": "System.Void XOProject.TradeModel::set_PortfolioId(System.Int32)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 79,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 32,
++              "EndColumn": 36,
++              "Class": "XOProject.TradeModel",
++              "Method": "get_Action",
++              "MethodFullName": "System.String XOProject.TradeModel::get_Action()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 80,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 37,
++              "EndColumn": 41,
++              "Class": "XOProject.TradeModel",
++              "Method": "set_Action",
++              "MethodFullName": "System.Void XOProject.TradeModel::set_Action(System.String)",
++              "Instruction": "IL_0000: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Repository\\GenericRepository.cs": {
++          "Instructions": [
++            {
++              "Id": 81,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 48,
++              "EndColumn": 52,
++              "Class": "XOProject.GenericRepository`1",
++              "Method": "get__dbContext",
++              "MethodFullName": "XOProject.ExchangeContext XOProject.GenericRepository`1::get__dbContext()",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 82,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 53,
++              "EndColumn": 57,
++              "Class": "XOProject.GenericRepository`1",
++              "Method": "set__dbContext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1::set__dbContext(XOProject.ExchangeContext)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 83,
++              "StartLine": 20,
++              "EndLine": 20,
++              "StartColumn": 13,
++              "EndColumn": 54,
++              "Class": "XOProject.GenericRepository`1",
++              "Method": "Query",
++              "MethodFullName": "System.Linq.IQueryable`1<T> XOProject.GenericRepository`1::Query()",
++              "Instruction": "IL_0001: ldarg "
++            },
++            {
++              "Id": 84,
++              "StartLine": 36,
++              "EndLine": 36,
++              "StartColumn": 13,
++              "EndColumn": 67,
++              "Class": "XOProject.GenericRepository`1",
++              "Method": "QueryWithOptions",
++              "MethodFullName": "System.Linq.IQueryable`1<T> XOProject.GenericRepository`1::QueryWithOptions(System.Func`2<T,System.Boolean>)",
++              "Instruction": "IL_0001: ldarg "
++            },
++            {
++              "Id": 85,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 54,
++              "Class": "XOProject.GenericRepository`1/<GetAsync>d__4",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<GetAsync>d__4::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 86,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 54,
++              "Class": "XOProject.GenericRepository`1/<GetAsync>d__4",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<GetAsync>d__4::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 87,
++              "StartLine": 25,
++              "EndLine": 25,
++              "StartColumn": 13,
++              "EndColumn": 45,
++              "Class": "XOProject.GenericRepository`1/<InsertAsync>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<InsertAsync>d__6::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 88,
++              "StartLine": 26,
++              "EndLine": 26,
++              "StartColumn": 13,
++              "EndColumn": 49,
++              "Class": "XOProject.GenericRepository`1/<InsertAsync>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<InsertAsync>d__6::MoveNext()",
++              "Instruction": "IL_002b: ldarg "
++            },
++            {
++              "Id": 89,
++              "StartLine": 25,
++              "EndLine": 25,
++              "StartColumn": 13,
++              "EndColumn": 45,
++              "Class": "XOProject.GenericRepository`1/<InsertAsync>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<InsertAsync>d__6::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 90,
++              "StartLine": 26,
++              "EndLine": 26,
++              "StartColumn": 13,
++              "EndColumn": 49,
++              "Class": "XOProject.GenericRepository`1/<InsertAsync>d__6",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<InsertAsync>d__6::MoveNext()",
++              "Instruction": "IL_002b: ldarg "
++            },
++            {
++              "Id": 91,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 13,
++              "EndColumn": 67,
++              "Class": "XOProject.GenericRepository`1/<UpdateAsync>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<UpdateAsync>d__7::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 92,
++              "StartLine": 32,
++              "EndLine": 32,
++              "StartColumn": 13,
++              "EndColumn": 49,
++              "Class": "XOProject.GenericRepository`1/<UpdateAsync>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<UpdateAsync>d__7::MoveNext()",
++              "Instruction": "IL_002c: ldarg "
++            },
++            {
++              "Id": 93,
++              "StartLine": 31,
++              "EndLine": 31,
++              "StartColumn": 13,
++              "EndColumn": 67,
++              "Class": "XOProject.GenericRepository`1/<UpdateAsync>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<UpdateAsync>d__7::MoveNext()",
++              "Instruction": "IL_000f: ldarg "
++            },
++            {
++              "Id": 94,
++              "StartLine": 32,
++              "EndLine": 32,
++              "StartColumn": 13,
++              "EndColumn": 49,
++              "Class": "XOProject.GenericRepository`1/<UpdateAsync>d__7",
++              "Method": "MoveNext",
++              "MethodFullName": "System.Void XOProject.GenericRepository`1/<UpdateAsync>d__7::MoveNext()",
++              "Instruction": "IL_002c: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Repository\\PortfolioRepository.cs": {
++          "Instructions": [
++            {
++              "Id": 95,
++              "StartLine": 8,
++              "EndLine": 8,
++              "StartColumn": 9,
++              "EndColumn": 62,
++              "Class": "XOProject.PortfolioRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.PortfolioRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 96,
++              "StartLine": 10,
++              "EndLine": 10,
++              "StartColumn": 13,
++              "EndColumn": 36,
++              "Class": "XOProject.PortfolioRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.PortfolioRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 97,
++              "StartLine": 15,
++              "EndLine": 15,
++              "StartColumn": 13,
++              "EndColumn": 78,
++              "Class": "XOProject.PortfolioRepository",
++              "Method": "GetAll",
++              "MethodFullName": "System.Linq.IQueryable`1<XOProject.Portfolio> XOProject.PortfolioRepository::GetAll()",
++              "Instruction": "IL_0001: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Repository\\ShareRepository.cs": {
++          "Instructions": [
++            {
++              "Id": 98,
++              "StartLine": 5,
++              "EndLine": 5,
++              "StartColumn": 9,
++              "EndColumn": 58,
++              "Class": "XOProject.ShareRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.ShareRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 99,
++              "StartLine": 7,
++              "EndLine": 7,
++              "StartColumn": 13,
++              "EndColumn": 36,
++              "Class": "XOProject.ShareRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.ShareRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0008: ldarg "
++            }
++          ]
++        },
++        "XOProject\\Repository\\TradeRepository.cs": {
++          "Instructions": [
++            {
++              "Id": 100,
++              "StartLine": 9,
++              "EndLine": 9,
++              "StartColumn": 9,
++              "EndColumn": 58,
++              "Class": "XOProject.TradeRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.TradeRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0000: ldarg "
++            },
++            {
++              "Id": 101,
++              "StartLine": 11,
++              "EndLine": 11,
++              "StartColumn": 13,
++              "EndColumn": 36,
++              "Class": "XOProject.TradeRepository",
++              "Method": ".ctor",
++              "MethodFullName": "System.Void XOProject.TradeRepository::.ctor(XOProject.ExchangeContext)",
++              "Instruction": "IL_0008: ldarg "
++            },
++            {
++              "Id": 102,
++              "StartLine": 18,
++              "EndLine": 25,
++              "StartColumn": 13,
++              "EndColumn": 16,
++              "Class": "XOProject.TradeRepository",
++              "Method": "GetTradeAnalysis",
++              "MethodFullName": "System.Linq.IQueryable`1<XOProject.TradeAnalysis> XOProject.TradeRepository::GetTradeAnalysis(System.String)",
++              "Instruction": "IL_000e: ldarg "
++            },
++            {
++              "Id": 103,
++              "StartLine": 26,
++              "EndLine": 26,
++              "StartColumn": 13,
++              "EndColumn": 27,
++              "Class": "XOProject.TradeRepository",
++              "Method": "GetTradeAnalysis",
++              "MethodFullName": "System.Linq.IQueryable`1<XOProject.TradeAnalysis> XOProject.TradeRepository::GetTradeAnalysis(System.String)",
++              "Instruction": "IL_02c8: ldloc V_1"
++            },
++            {
++              "Id": 104,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 48,
++              "EndColumn": 71,
++              "Class": "XOProject.TradeRepository/<>c__DisplayClass1_0",
++              "Method": "<GetTradeAnalysis>b__0",
++              "MethodFullName": "System.Boolean XOProject.TradeRepository/<>c__DisplayClass1_0::<GetTradeAnalysis>b__0(XOProject.Trade)",
++              "Instruction": "IL_0000: ldarg a"
++            },
++            {
++              "Id": 105,
++              "StartLine": 18,
++              "EndLine": 18,
++              "StartColumn": 48,
++              "EndColumn": 71,
++              "Class": "XOProject.TradeRepository/<>c__DisplayClass1_0",
++              "Method": "<GetTradeAnalysis>b__0",
++              "MethodFullName": "System.Boolean XOProject.TradeRepository/<>c__DisplayClass1_0::<GetTradeAnalysis>b__0(XOProject.Trade)",
++              "Instruction": "IL_0000: ldarg a"
++            }
++          ]
++        }
++      },
++      "Locations": [
++        {
++          "File": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\XOProject.Tests\\bin\\Debug\\netcoreapp2.0\\XO-Project.dll",
++          "BackupFile": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\XOProject.Tests\\bin\\Debug\\netcoreapp2.0\\XO-Project.uninstrumented.dll",
++          "PdbFile": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\XOProject.Tests\\bin\\Debug\\netcoreapp2.0\\XO-Project.pdb",
++          "BackupPdbFile": "C:\\Users\\famof\\OneDrive\\Documents\\Visual Studio 2017\\Code Snippets\\Visual C#\\CrossExchange\\XOProject.Tests\\bin\\Debug\\netcoreapp2.0\\XO-Project.uninstrumented.pdb"
++        }
++      ]
++    }
++  ]
++}
+\ No newline at end of file
+-- 
+2.19.0.windows.1
+

@@ -1,0 +1,34 @@
+<html>
+<body style="font-family: monospace;">
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
+<div style="white-space: pre;background-color: #EEF4ED;">{</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeRepository : GenericRepository&lt;Trade&gt;, ITradeRepository</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #D2EACE;">        public TradeRepository(ExchangeContext dbContext)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #D2EACE;">            _dbContext = dbContext;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        </div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        public IQueryable&lt;TradeAnalysis&gt; GetTradeAnalysis(string symbol)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #D2EACE;">            var trades = QueryWithOptions(a =&gt; a.Symbol.Equals(symbol)).GroupBy(a =&gt; a.Action).Select(s =&gt; new TradeAnalysis</div>
+<div style="white-space: pre;background-color: #D2EACE;">            {</div>
+<div style="white-space: pre;background-color: #D2EACE;">                Maximum = s.Max(x=&gt;x.NoOfShares), </div>
+<div style="white-space: pre;background-color: #D2EACE;">                Minimum = s.Min(x=&gt;x.NoOfShares),</div>
+<div style="white-space: pre;background-color: #D2EACE;">                Average = s.Average(x=&gt;x.NoOfShares),</div>
+<div style="white-space: pre;background-color: #D2EACE;">                Sum =     s.Sum(x=&gt;x.NoOfShares),</div>
+<div style="white-space: pre;background-color: #D2EACE;">                Action =  s.Key</div>
+<div style="white-space: pre;background-color: #D2EACE;">            });</div>
+<div style="white-space: pre;background-color: #D2EACE;">            return trades;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">}</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\bin\Debug\netcoreapp2.0\XO-Project.deps.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\bin\Debug\netcoreapp2.0\XO-Project.runtimeconfig.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\bin\Debug\netcoreapp2.0\XO-Project.runtimeconfig.dev.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\bin\Debug\netcoreapp2.0\XO-Project.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\bin\Debug\netcoreapp2.0\XO-Project.pdb
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.csprojAssemblyReference.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.csproj.CoreCompileInputs.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.AssemblyInfoInputs.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.AssemblyInfo.cs
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject\obj\Debug\netcoreapp2.0\XO-Project.pdb

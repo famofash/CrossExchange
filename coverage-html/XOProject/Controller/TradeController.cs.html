@@ -1,0 +1,57 @@
+<html>
+<body style="font-family: monospace;">
+<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using System.Collections.Generic;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using System.Linq;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Http;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Mvc;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.EntityFrameworkCore;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject.Controller</div>
+<div style="white-space: pre;background-color: #EEF4ED;">{</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    [Route(&quot;api/Trade/&quot;)]</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeController : ControllerBase</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
+<div style="white-space: pre;background-color: #D2EACE;">        private IShareRepository _shareRepository { get; set; }</div>
+<div style="white-space: pre;background-color: #D2EACE;">        private ITradeRepository _tradeRepository { get; set; }</div>
+<div style="white-space: pre;background-color: #D2EACE;">        private IPortfolioRepository _portfolioRepository { get; set; }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #D2EACE;">        public TradeController(IShareRepository shareRepository, ITradeRepository tradeRepository, IPortfolioRepository portfolioRepository)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #D2EACE;">            _shareRepository = shareRepository;</div>
+<div style="white-space: pre;background-color: #D2EACE;">            _tradeRepository = tradeRepository;</div>
+<div style="white-space: pre;background-color: #D2EACE;">            _portfolioRepository = portfolioRepository;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;{portfolioid}&quot;)]</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetAllTradings([FromRoute]int portFolioid)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #D2EACE;">            var trade =  _tradeRepository.Query().Where(x =&gt; x.PortfolioId.Equals(portFolioid));</div>
+<div style="white-space: pre;background-color: #D2EACE;">            return Ok(trade);</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;summary&gt;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// For a given symbol of share, get the statistics for that particular share calculating the maximum, minimum, </div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// average and Sum of all the trades for that share individually grouped into Buy trade and Sell trade.</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;/summary&gt;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;param name=&quot;symbol&quot;&gt;&lt;/param&gt;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        /// &lt;returns&gt;&lt;/returns&gt;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [HttpGet(&quot;Analysis/{symbol}&quot;)]</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        public async Task&lt;IActionResult&gt; GetAnalysis([FromRoute]string symbol)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #D2EACE;">            var result = new List&lt;TradeAnalysis&gt;();</div>
+<div style="white-space: pre;background-color: #D2EACE;">            result =  _tradeRepository.GetTradeAnalysis(symbol).ToList();</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            </div>
+<div style="white-space: pre;background-color: #D2EACE;">            return Ok(result);</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">}</div>
+</body>
+</html>

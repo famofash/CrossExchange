@@ -1,0 +1,17 @@
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\NUnit3.TestAdapter.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\nunit.engine.netstandard.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\Mono.Cecil.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.Tests.deps.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.Tests.runtimeconfig.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.Tests.runtimeconfig.dev.json
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.Tests.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.Tests.pdb
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\bin\Debug\netcoreapp2.0\XO-Project.pdb
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.csprojAssemblyReference.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.csproj.CoreCompileInputs.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.AssemblyInfoInputs.cache
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.AssemblyInfo.cs
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.csproj.CopyComplete
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.dll
+C:\Users\famof\OneDrive\Documents\Visual Studio 2017\Code Snippets\Visual C#\CrossExchange\XOProject.Tests\obj\Debug\netcoreapp2.0\XO-Project.Tests.pdb

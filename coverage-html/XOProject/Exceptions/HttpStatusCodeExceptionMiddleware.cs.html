@@ -1,0 +1,47 @@
+<html>
+<body style="font-family: monospace;">
+<div style="white-space: pre;background-color: #EEF4ED;">using System;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using System.Threading.Tasks;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.AspNetCore.Http;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">using Microsoft.Extensions.Logging;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
+<div style="white-space: pre;background-color: #EEF4ED;">{</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    public class HttpStatusCodeExceptionMiddleware</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        private readonly ILogger&lt;HttpStatusCodeExceptionMiddleware&gt; _logger;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        private readonly RequestDelegate _next;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EACECC;">        public HttpStatusCodeExceptionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #EACECC;">            _next = next ?? throw new ArgumentNullException(nameof(next));</div>
+<div style="white-space: pre;background-color: #EACECC;">            _logger = loggerFactory?.CreateLogger&lt;HttpStatusCodeExceptionMiddleware&gt;() ??</div>
+<div style="white-space: pre;background-color: #EACECC;">                      throw new ArgumentNullException(nameof(loggerFactory));</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        public async Task Invoke(HttpContext context)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        {</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            try</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
+<div style="white-space: pre;background-color: #EACECC;">                await _next(context);</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
+<div style="white-space: pre;background-color: #EACECC;">            catch (HttpStatusCodeException ex)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            {</div>
+<div style="white-space: pre;background-color: #EACECC;">                if (context.Response.HasStarted)</div>
+<div style="white-space: pre;background-color: #EEF4ED;">                {</div>
+<div style="white-space: pre;background-color: #EACECC;">                    _logger.LogWarning(</div>
+<div style="white-space: pre;background-color: #EACECC;">                        &quot;The response has already started, the http status code middleware will not be executed.&quot;);</div>
+<div style="white-space: pre;background-color: #EACECC;">                    throw;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">                }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EACECC;">                context.Response.Clear();</div>
+<div style="white-space: pre;background-color: #EACECC;">                context.Response.StatusCode = ex.StatusCode;</div>
+<div style="white-space: pre;background-color: #EACECC;">                context.Response.ContentType = ex.ContentType;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EACECC;">                await context.Response.WriteAsync(ex.Message);</div>
+<div style="white-space: pre;background-color: #EEF4ED;">            }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">}</div>
+</body>
+</html>

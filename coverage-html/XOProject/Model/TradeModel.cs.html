@@ -1,0 +1,24 @@
+<html>
+<body style="font-family: monospace;">
+<div style="white-space: pre;background-color: #EEF4ED;">using System.ComponentModel.DataAnnotations;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">namespace XOProject</div>
+<div style="white-space: pre;background-color: #EEF4ED;">{</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    public class TradeModel</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    {</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
+<div style="white-space: pre;background-color: #EACECC;">        public string Symbol { get; set; }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
+<div style="white-space: pre;background-color: #EACECC;">        public int NoOfShares { get; set; }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
+<div style="white-space: pre;background-color: #EACECC;">        public int PortfolioId { get; set; }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">&nbsp;</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [Required]</div>
+<div style="white-space: pre;background-color: #EEF4ED;">        [RegularExpression(&quot;BUY|SELL&quot;)]</div>
+<div style="white-space: pre;background-color: #EACECC;">        public string Action { get; set; }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">    }</div>
+<div style="white-space: pre;background-color: #EEF4ED;">}</div>
+</body>
+</html>
